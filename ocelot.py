@@ -70,12 +70,32 @@ def getWalkScores(address, lat, long):
     response = requests.get(urlWalkScore, headers=headers)
     if response.status_code == 200:
         resp = response.json()
-        walk = resp.get('walkscore')
-        bike = resp.get('bike').get('score')
-        transit = resp.get('transit').get('score')
-        scores = {'walk': walk, 'bike': bike, 'transit': transit}
+        walkscore = resp.get('walkscore')
+        if walkscore is not None:
+            walkscoredesc = resp.get('description')
+        else:
+            walkscore = 'n/a'
+            walkscoredesc = 'n/a'
+
+        bike = resp.get('bike')
+        if bike is not None:
+            bikescore = bike.get('score')
+            bikescoredesc = bike.get('description')
+        else:
+            bikescore = 'n/a'
+            bikescoredesc = 'n/a'
+        transit = resp.get('transit')
+        if transit is not None:
+            transitscore = transit.get('score')
+            transitscoredesc = transit.get('description')
+        else:
+            transitscore = 'n/a'
+            transitscoredesc = 'n/a'
+        scores = {'walkscore': walkscore, 'walkscoredesc': walkscoredesc,'bikescore': bikescore,'bikescoredesc':bikescoredesc, 'transitscore': transitscore,'transitscoredesc':transitscoredesc}
     else:
-        scores = 'ERROR'
+        scores = {'walkscore': 'n/a', 'walkscoredesc': 'n/a', 'bikescore': 'n/a',
+                  'bikescoredesc': 'n/a', 'transitscore': 'n/a', 'transitscoredesc': 'n/a'}
+
     return scores
 
 
@@ -89,18 +109,20 @@ latpoc = 40.4581259
 longpoc = -79.9352492
 addresspoc = '5607-Baum-Blvd.-Pittsburgh-PA-15206'
 
-
 # Create Excel output
 wbout = Workbook()
 # Create sheet.
 sheet1 = wbout.add_sheet('Output')
 sheet1.write(0, 0, 'study id')
-sheet1.write(0, 1, 'latitude')
-sheet1.write(0, 2, 'longitude')
-sheet1.write(0, 3, 'tract')
-sheet1.write(0, 4, 'walk')
-sheet1.write(0, 5, 'bike')
-sheet1.write(0, 6, 'transit')
+# sheet1.write(0, 1, 'latitude')
+# sheet1.write(0, 2, 'longitude')
+sheet1.write(0, 1, 'tract')
+sheet1.write(0, 2, 'walkscore')
+sheet1.write(0, 3, 'walkscoredesc')
+sheet1.write(0, 4, 'bikescore')
+sheet1.write(0, 5, 'bikescoredesc')
+sheet1.write(0, 6, 'transitscore')
+sheet1.write(0, 7, 'transitscoredesc')
 
 # Loop through input spreadsheet and obtain census tract and walk scores.
 for index, row in dfgeodata.iterrows():
@@ -111,24 +133,27 @@ for index, row in dfgeodata.iterrows():
 
     print('Study ID:',studyid,'lat: ',lat,'long:',long)
     # Comment these lines to use actual values.
-    lat = latpoc
-    long = longpoc
-    address = addresspoc
+    # lat = latpoc
+    # long = longpoc
+    # address = addresspoc
     # Comment these lines to use actual values.
 
     tract = getCensusTract(latpoc, long)
     print('   tract:',tract)
     scores = getWalkScores(address, latpoc, long)
-    print('   walk: ',scores.get('walk'),'bike: ', scores.get('bike'), 'transit: ', scores.get('transit'))
+    print('   scores:',scores)
 
     xlrow = index+1
     sheet1.write(xlrow, 0, studyid)
-    sheet1.write(xlrow, 1, lat)
-    sheet1.write(xlrow, 2, long)
-    sheet1.write(xlrow, 3, tract)
-    sheet1.write(xlrow, 4, scores.get('walk'))
-    sheet1.write(xlrow, 5, scores.get('bike'))
-    sheet1.write(xlrow, 6, scores.get('transit'))
+    # sheet1.write(xlrow, 1, lat)
+    # sheet1.write(xlrow, 2, long)
+    sheet1.write(xlrow, 1, tract)
+    sheet1.write(xlrow, 2, scores.get('walkscore'))
+    sheet1.write(xlrow, 3, scores.get('walkscoredesc'))
+    sheet1.write(xlrow, 4, scores.get('bikescore'))
+    sheet1.write(xlrow, 5, scores.get('bikescoredesc'))
+    sheet1.write(xlrow, 6, scores.get('transitscore'))
+    sheet1.write(xlrow, 7, scores.get('transitscoredesc'))
 
 
 wbout.save('ocelot.xls')
