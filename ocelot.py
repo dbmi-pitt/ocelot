@@ -64,7 +64,9 @@ def getWalkScores(address, lat, long):
     # API key from Walk Score
     apikey = '2f0368204f0cd4d0ce377c36eb01c8b0'
 
-    urlWalkScore = 'https://api.walkscore.com/score?format=json&address=' + address + '&lat=' + str(
+    # 22 nov 2022 - turns out, address is not required if you have geocoordinates.
+    # urlWalkScore = 'https://api.walkscore.com/score?format=json&address=' + address + '&lat=' + str(
+    urlWalkScore = 'https://api.walkscore.com/score?format=json' + '&lat=' + str(
         lat) + '&lon=' + str(long) + '&transit=1&bike=1&wsapikey=' + apikey
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
     response = requests.get(urlWalkScore, headers=headers)
